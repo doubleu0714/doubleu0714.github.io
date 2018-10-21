@@ -1,7 +1,8 @@
 locale: ko-kr
 title: Zero to Hero
 #description: 저장소
-url: http://doubleu0714.github.io
+url: https://doubleu0714.github.io
+baseurl: ""
 theme: jekyll-theme-so-simple
 remote_theme: "mmistakes/so-simple-theme"
 date_format: "%Y-%m-%d"
