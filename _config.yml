@@ -1,0 +1,16 @@
+locale: ko-kr
+title: Zero to Hero
+#description: 저장소
+url: http://doubleu0714.github.io
+theme: jekyll-theme-so-simple
+
+date_format: "%Y-%m-%d"
+search_full_content: true
+
+author:
+  name: Wonhyung park
+  picture: /images/iam.jpg
+
+google_fonts:
+  - name: "Do Hyeon"
+  - name: "Nanum Gothic"
