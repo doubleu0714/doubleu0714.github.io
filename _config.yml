@@ -3,7 +3,7 @@ title: Zero to Hero
 #description: 저장소
 url: http://doubleu0714.github.io
 theme: jekyll-theme-so-simple
-
+remote_theme: "mmistakes/so-simple-theme"
 date_format: "%Y-%m-%d"
 search_full_content: true
 
