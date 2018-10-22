@@ -1,6 +1,6 @@
 locale: ko-kr
 title: Zero to Hero
-#description: 저장소
+description: library
 url: https://doubleu0714.github.io
 baseurl: ""
 theme: jekyll-theme-so-simple
