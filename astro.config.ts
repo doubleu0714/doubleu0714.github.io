@@ -68,6 +68,15 @@ export default defineConfig({
   },
   fonts: [
     {
+      name: "Nanum Gothic",
+      cssVariable: "--font-nanum-gothic",
+      provider: fontProviders.google(),
+      fallbacks: ["sans-serif"],
+      weights: [400, 700],
+      styles: ["normal"],
+      subsets: ["korean", "latin"],
+    },
+    {
       name: "Google Sans Code",
       cssVariable: "--font-google-sans-code",
       provider: fontProviders.google(),

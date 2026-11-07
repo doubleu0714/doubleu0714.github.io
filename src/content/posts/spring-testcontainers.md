@@ -16,8 +16,6 @@ tags:
 
 ## 왜 Testcontainers를 쓸까?
 
-"왜?"를 다섯 번 물으며 **이 기술을 써야 하는 이유**와 **이 기술이 무엇을 극복하려고 태어났는지**까지 내려가 보겠습니다.
-
 **1. 왜 Testcontainers를 쓰나요?**
 테스트할 때마다 **실제 서비스와 똑같은 DB**를, 아무도 건드리지 않은 **깨끗한 상태로** 쓰고 싶어서입니다.
 
@@ -114,14 +112,14 @@ Testcontainers는 이 상자를 **테스트 코드에서 직접 열고 닫을 �
 ### 준비물
 
 - **Docker**: 내 컴퓨터에 Docker Desktop(또는 OrbStack, Colima 등)이 실행 중이어야 합니다.
-- **의존성 추가** (`build.gradle`)
+- **의존성 추가** (`build.gradle.kts`)
 
-```groovy
+```kotlin
 dependencies {
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.boot:spring-boot-testcontainers'
-    testImplementation 'org.testcontainers:testcontainers-junit-jupiter'
-    testImplementation 'org.testcontainers:testcontainers-postgresql'
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.boot:spring-boot-testcontainers")
+    testImplementation("org.testcontainers:testcontainers-junit-jupiter")
+    testImplementation("org.testcontainers:testcontainers-postgresql")
 }
 ```
 
@@ -131,31 +129,35 @@ dependencies {
 
 ### 가장 기본적인 테스트
 
-```java
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.postgresql.PostgreSQLContainer;
+```kotlin
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection
+import org.testcontainers.junit.jupiter.Container
+import org.testcontainers.junit.jupiter.Testcontainers
+import org.testcontainers.postgresql.PostgreSQLContainer
 
 @SpringBootTest
 @Testcontainers
-class MemberRepositoryTest {
-
-    @Container
-    @ServiceConnection
-    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:17-alpine");
-
-    @Autowired
-    MemberRepository memberRepository;
+class MemberRepositoryTest(
+    @Autowired private val memberRepository: MemberRepository,
+) {
 
     @Test
-    void 회원을_저장하면_다시_조회할_수_있다() {
-        Member saved = memberRepository.save(new Member("원형"));
+    fun `회원을 저장하면 다시 조회할 수 있다`() {
+        val saved = memberRepository.save(Member("원형"))
 
-        assertThat(memberRepository.findById(saved.getId())).isPresent();
+        assertThat(memberRepository.findById(saved.id)).isPresent
+    }
+
+    companion object {
+        @Container
+        @ServiceConnection
+        @JvmStatic
+        val postgres = PostgreSQLContainer("postgres:17-alpine")
     }
 }
 ```
+
+> 💡 Kotlin에는 Java의 `static`이 없어서 `companion object`에 `@JvmStatic`을 붙여 같은 효과를 냅니다. 테스트 클래스 전체가 공유하는 컨테이너를 선언할 때 쓰는 관용구입니다.
 
 어노테이션 세 개가 핵심입니다.
 
@@ -171,12 +173,15 @@ class MemberRepositoryTest {
 
 Spring Boot 3.1 이전에는 접속 정보를 직접 넘겨줘야 했습니다. 오래된 프로젝트에서 이런 코드를 만나면 같은 일을 하는 코드라고 이해하면 됩니다.
 
-```java
-@DynamicPropertySource
-static void configureProperties(DynamicPropertyRegistry registry) {
-    registry.add("spring.datasource.url", postgres::getJdbcUrl);
-    registry.add("spring.datasource.username", postgres::getUsername);
-    registry.add("spring.datasource.password", postgres::getPassword);
+```kotlin
+companion object {
+    @JvmStatic
+    @DynamicPropertySource
+    fun configureProperties(registry: DynamicPropertyRegistry) {
+        registry.add("spring.datasource.url") { postgres.jdbcUrl }
+        registry.add("spring.datasource.username") { postgres.username }
+        registry.add("spring.datasource.password") { postgres.password }
+    }
 }
 ```
 
@@ -190,21 +195,19 @@ static void configureProperties(DynamicPropertyRegistry registry) {
 
 공용 설정 클래스를 만들어 컨테이너를 **Spring Bean**으로 등록하면, 여러 테스트 클래스가 하나의 컨테이너를 함께 씁니다.
 
-```java
+```kotlin
 @TestConfiguration(proxyBeanMethods = false)
-public class TestcontainersConfig {
+class TestcontainersConfig {
 
     @Bean
     @ServiceConnection
-    PostgreSQLContainer postgres() {
-        return new PostgreSQLContainer("postgres:17-alpine");
-    }
+    fun postgres(): PostgreSQLContainer = PostgreSQLContainer("postgres:17-alpine")
 }
 ```
 
-```java
+```kotlin
 @SpringBootTest
-@Import(TestcontainersConfig.class)
+@Import(TestcontainersConfig::class)
 class MemberRepositoryTest {
     // 컨테이너 선언 없이 바로 테스트 작성
 }
@@ -216,15 +219,13 @@ Spring은 같은 설정을 쓰는 테스트들끼리 애플리케이션 컨텍�
 
 Testcontainers는 테스트 전용이 아닙니다. 위 설정 클래스를 재사용하면 **내 컴퓨터에 DB를 설치하지 않고도** 애플리케이션을 실행할 수 있습니다.
 
-`src/test/java`에 아래 클래스를 만들고 실행하면, PostgreSQL 컨테이너가 함께 뜬 상태로 애플리케이션이 시작됩니다.
+`src/test/kotlin`에 아래 파일을 만들고 실행하면, PostgreSQL 컨테이너가 함께 뜬 상태로 애플리케이션이 시작됩니다.
 
-```java
-public class TestApplication {
-    public static void main(String[] args) {
-        SpringApplication.from(Application::main)
-                .with(TestcontainersConfig.class)
-                .run(args);
-    }
+```kotlin
+fun main(args: Array<String>) {
+    fromApplication<Application>()
+        .with(TestcontainersConfig::class.java)
+        .run(*args)
 }
 ```
 

@@ -37,3 +37,11 @@
 :target {
   scroll-margin-block: 1rem;
 }
+
+/* 본문은 나눔고딕, 코드는 고정폭 폰트 유지 */
+code,
+pre,
+kbd,
+samp {
+  font-family: var(--font-code), monospace;
+}
