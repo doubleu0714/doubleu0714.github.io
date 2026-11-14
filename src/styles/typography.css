@@ -13,8 +13,9 @@
       @apply text-foreground mb-3;
     }
 
-    h3 {
-      @apply italic;
+    /* 나눔고딕에는 기울임꼴이 없어 억지로 비스듬해지므로 인용문도 기울이지 않음 */
+    blockquote {
+      @apply not-italic;
     }
 
     p,
