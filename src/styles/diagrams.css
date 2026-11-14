@@ -1,0 +1,248 @@
+/* 글 안에 인라인 SVG로 넣는 애니메이션 다이어그램 (class는 모두 dg- 접두사) */
+:root,
+[data-theme="light"] {
+  --dg-b: #15803d;
+  --dg-b-fg: #ffffff;
+  --dg-wait: #c2410c;
+  --dg-bad: #b91c1c;
+  --dg-bad-fg: #ffffff;
+  --dg-cancel: #6b7280;
+  --dg-cancel-fg: #ffffff;
+}
+
+[data-theme="dark"] {
+  --dg-b: #4ade80;
+  --dg-b-fg: #14291c;
+  --dg-wait: #fb923c;
+  --dg-bad: #f87171;
+  --dg-bad-fg: #3b0d0d;
+  --dg-cancel: #94a3b8;
+  --dg-cancel-fg: #1e293b;
+}
+
+figure.dg {
+  margin: 1.5rem 0;
+  overflow-x: auto;
+}
+
+figure.dg svg {
+  display: block;
+  width: 100%;
+  min-width: 600px;
+  height: auto;
+  font-family: inherit;
+}
+
+figure.dg figcaption {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+
+.dg text {
+  fill: var(--foreground);
+  font-size: 13px;
+}
+.dg .dg-title {
+  font-size: 14px;
+  font-weight: 700;
+  fill: var(--heading);
+}
+.dg .dg-label {
+  fill: var(--muted-foreground);
+}
+.dg .dg-strong {
+  font-weight: 700;
+}
+.dg .dg-center {
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+/* 막대와 상자 */
+.dg .dg-surface {
+  fill: var(--muted);
+  stroke: var(--accent);
+  stroke-width: 1.5;
+}
+.dg .dg-a {
+  fill: var(--accent);
+}
+.dg .dg-a-text {
+  fill: var(--accent-foreground);
+  font-weight: 700;
+}
+.dg .dg-b {
+  fill: var(--dg-b);
+}
+.dg .dg-b-text {
+  fill: var(--dg-b-fg);
+  font-weight: 700;
+}
+.dg .dg-bad {
+  fill: var(--dg-bad);
+}
+.dg .dg-bad-text {
+  fill: var(--dg-bad-fg);
+  font-weight: 700;
+}
+.dg .dg-cancel {
+  fill: var(--dg-cancel);
+}
+.dg .dg-cancel-text {
+  fill: var(--dg-cancel-fg);
+  font-weight: 700;
+}
+.dg .dg-idle {
+  fill: url(#dg-hatch);
+  stroke: var(--dg-wait);
+  stroke-width: 1.5;
+}
+.dg .dg-idle-text {
+  fill: var(--dg-wait);
+  font-weight: 700;
+  paint-order: stroke;
+  stroke: var(--background);
+  stroke-width: 4px;
+}
+.dg .dg-hatch-line {
+  stroke: var(--dg-wait);
+  stroke-width: 2;
+  opacity: 0.55;
+}
+.dg .dg-free {
+  fill: none;
+  stroke: var(--dg-b);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+}
+.dg .dg-free-text {
+  fill: var(--dg-b);
+  font-weight: 700;
+}
+.dg .dg-timer-a {
+  fill: var(--accent);
+  fill-opacity: 0.25;
+  stroke: var(--accent);
+  stroke-width: 1.5;
+}
+.dg .dg-timer-b {
+  fill: var(--dg-b);
+  fill-opacity: 0.25;
+  stroke: var(--dg-b);
+  stroke-width: 1.5;
+}
+.dg .dg-axis {
+  stroke: var(--muted-foreground);
+  stroke-width: 1.5;
+}
+.dg .dg-sep {
+  stroke: var(--border);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+}
+
+/* 연결선 */
+.dg .dg-line {
+  fill: none;
+  stroke: var(--muted-foreground);
+  stroke-width: 2;
+}
+.dg .dg-line-bad,
+.dg .dg-line-cancel {
+  fill: none;
+  stroke-width: 3;
+  stroke-dasharray: 7 6;
+  animation: dg-dash 0.8s linear infinite;
+}
+.dg .dg-line-bad {
+  stroke: var(--dg-bad);
+}
+.dg .dg-line-cancel {
+  stroke: var(--dg-wait);
+}
+@keyframes dg-dash {
+  to {
+    stroke-dashoffset: -13;
+  }
+}
+
+/* 타임라인: 덮개가 오른쪽으로 걷히며 막대가 나타남 */
+.dg .dg-cover rect {
+  fill: var(--background);
+}
+.dg .dg-cover,
+.dg .dg-playhead {
+  animation: dg-run 14s linear infinite;
+}
+.dg .dg-cover {
+  animation-name: dg-uncover;
+}
+.dg .dg-playhead {
+  stroke: var(--foreground);
+  stroke-width: 2;
+  stroke-dasharray: 4 3;
+}
+@keyframes dg-uncover {
+  0% {
+    transform: translateX(0);
+  }
+  80% {
+    transform: translateX(480px);
+  }
+  86%,
+  100% {
+    transform: translateX(560px);
+  }
+}
+@keyframes dg-run {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  80% {
+    transform: translateX(480px);
+    opacity: 1;
+  }
+  86%,
+  100% {
+    transform: translateX(480px);
+    opacity: 0;
+  }
+}
+
+/* 단계별 등장: dg-on-N 은 반복 주기의 N% 지점에 나타났다가 주기 끝에 사라짐 */
+.dg .dg-on {
+  opacity: 0;
+  animation-duration: 9s;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+.dg .dg-on-25 { animation-name: dg-on-25; }
+.dg .dg-on-35 { animation-name: dg-on-35; }
+.dg .dg-on-45 { animation-name: dg-on-45; }
+.dg .dg-on-55 { animation-name: dg-on-55; }
+.dg .dg-on-65 { animation-name: dg-on-65; }
+.dg .dg-on-85 { animation-name: dg-on-85; }
+@keyframes dg-on-25 { 0%, 24% { opacity: 0; } 26%, 94% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes dg-on-35 { 0%, 34% { opacity: 0; } 36%, 94% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes dg-on-45 { 0%, 44% { opacity: 0; } 46%, 94% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes dg-on-55 { 0%, 54% { opacity: 0; } 56%, 94% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes dg-on-65 { 0%, 64% { opacity: 0; } 66%, 94% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes dg-on-85 { 0%, 84% { opacity: 0; } 86%, 94% { opacity: 1; } 100% { opacity: 0; } }
+
+/* 움직임 줄이기 설정: 애니메이션을 멈추고 완성된 장면을 보여 줌 */
+@media (prefers-reduced-motion: reduce) {
+  .dg .dg-cover,
+  .dg .dg-playhead {
+    display: none;
+  }
+  .dg .dg-on {
+    animation: none;
+    opacity: 1;
+  }
+  .dg .dg-line-bad,
+  .dg .dg-line-cancel {
+    animation: none;
+  }
+}

@@ -31,3 +31,6 @@ public/pagefind
 
 # docker compose
 compose.override.yaml
+
+# Playwright MCP 로그/스냅샷
+.playwright-mcp/
